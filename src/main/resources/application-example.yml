@@ -1,0 +1,26 @@
+# Example Spring Boot application configuration
+# Copy to application.yml and fill secrets before running locally.
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+miniwallet:
+  default-currency: USD
+
+security:
+  jwt:
+    secret: change-me-replace-in-prod
+    expiration-ms: 3600000 # 1 hour
+
+# Note: Do NOT commit real credentials. This file is an example only.
