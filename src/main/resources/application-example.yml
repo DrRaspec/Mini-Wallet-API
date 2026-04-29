@@ -22,6 +22,3 @@ security:
   jwt:
     secret: change-me-replace-in-prod
     expiration-ms: 3600000 # 1 hour
-
-
-# Note: Do NOT commit real credentials. This file is an example only.
