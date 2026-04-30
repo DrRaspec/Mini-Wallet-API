@@ -20,5 +20,6 @@ miniwallet:
 
 security:
   jwt:
-    secret: change-me-replace-in-prod
+    # Base64-encoded 256-bit or stronger HMAC key. Replace in every real environment.
+    secret: ${JWT_SECRET}=
     expiration-ms: 3600000 # 1 hour

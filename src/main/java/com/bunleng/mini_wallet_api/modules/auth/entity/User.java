@@ -25,6 +25,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private Role role = Role.USER;
 
     @Column(nullable = true)
@@ -37,12 +38,15 @@ public class User {
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean locked = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean deleted = false;
 
     @PrePersist

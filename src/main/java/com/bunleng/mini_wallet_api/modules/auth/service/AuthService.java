@@ -10,13 +10,18 @@ import com.bunleng.mini_wallet_api.modules.auth.entity.User;
 import com.bunleng.mini_wallet_api.modules.auth.mapper.AuthMapper;
 import com.bunleng.mini_wallet_api.modules.auth.repository.RefreshTokenRepository;
 import com.bunleng.mini_wallet_api.modules.auth.repository.UserRepository;
+import com.bunleng.mini_wallet_api.shared.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -44,6 +49,8 @@ public class AuthService {
         String accessToken = jwtUtil.generateToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
+        saveRefreshToken(user, refreshToken);
+
         return authMapper.toAuthResponse(user, accessToken, refreshToken);
     }
 
@@ -56,6 +63,7 @@ public class AuthService {
         User user = User.builder()
                 .username(req.username())
                 .password(passwordEncoder.encode(req.password()))
+                .role(Role.USER)
                 .active(true)
                 .locked(false)
                 .deleted(false)
@@ -73,7 +81,11 @@ public class AuthService {
 
     public AuthResponse refresh(String refreshToken) {
 
-        RefreshToken stored = refreshTokenRepository.findByToken(refreshToken)
+        if (!jwtUtil.validateRefreshToken(refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        RefreshToken stored = refreshTokenRepository.findByToken(hashRefreshToken(refreshToken))
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
 
         if (stored.isRevoked() || stored.isExpired()) {
@@ -105,7 +117,7 @@ public class AuthService {
 
         RefreshToken rt = RefreshToken.builder()
                 .user(user)
-                .token(token)
+                .token(hashRefreshToken(token))
                 .revoked(false)
                 .expired(false)
                 .issuedAt(LocalDateTime.now())
@@ -130,12 +142,22 @@ public class AuthService {
 
     public void logout(String refreshToken) {
 
-        RefreshToken stored = refreshTokenRepository.findByToken(refreshToken)
+        RefreshToken stored = refreshTokenRepository.findByToken(hashRefreshToken(refreshToken))
                 .orElseThrow();
 
         stored.setRevoked(true);
         stored.setExpired(true);
 
         refreshTokenRepository.save(stored);
+    }
+
+    private String hashRefreshToken(String refreshToken) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(refreshToken.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is not available", e);
+        }
     }
 }

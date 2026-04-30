@@ -51,6 +51,9 @@ The application reads its database configuration from environment variables with
 
 JWT settings are also configured in `src/main/resources/application.yaml`.
 
+- `JWT_SECRET` - Base64-encoded 256-bit or stronger HMAC key
+- `JWT_EXPIRATION_MS` - access-token lifetime in milliseconds, defaults to `3600000`
+
 ## Running the API
 
 1. Create the PostgreSQL database if it does not already exist.

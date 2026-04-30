@@ -14,11 +14,15 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
+    @Value("${security.jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
+    @Value("${security.jwt.expiration-ms}")
     private long jwtExpirationMs;
+
+    private static final String ISSUER = "mini-wallet";
+    private static final String ACCESS_TOKEN_TYPE = "access";
+    private static final String REFRESH_TOKEN_TYPE = "refresh";
 
     private SecretKey key;
 
@@ -33,8 +37,8 @@ public class JwtUtil {
                 .subject(user.getId().toString())
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole().name())
-                .claim("type", "access")
-                .issuer("mini-wallet")
+                .claim("type", ACCESS_TOKEN_TYPE)
+                .issuer(ISSUER)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key)
@@ -44,8 +48,8 @@ public class JwtUtil {
     public String generateRefreshToken(User user) {
         return Jwts.builder()
                 .subject(user.getId().toString())
-                .claim("type", "refresh")
-                .issuer("mini-wallet")
+                .claim("type", REFRESH_TOKEN_TYPE)
+                .issuer(ISSUER)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs * 7))
                 .signWith(key)
@@ -73,11 +77,20 @@ public class JwtUtil {
         return parseClaims(token).get("role", String.class);
     }
 
-    public boolean validate(String token) {
+    public boolean validateAccessToken(String token) {
+        return validate(token, ACCESS_TOKEN_TYPE);
+    }
+
+    public boolean validateRefreshToken(String token) {
+        return validate(token, REFRESH_TOKEN_TYPE);
+    }
+
+    private boolean validate(String token, String expectedType) {
         try {
             Claims claims = parseClaims(token);
             return claims.getSubject() != null &&
-                    claims.getExpiration().after(new Date());
+                    claims.getExpiration().after(new Date()) &&
+                    expectedType.equals(claims.get("type", String.class));
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
