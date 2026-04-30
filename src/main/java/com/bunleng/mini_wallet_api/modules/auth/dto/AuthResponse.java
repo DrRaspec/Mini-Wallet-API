@@ -6,5 +6,6 @@ public record AuthResponse(
         UUID userId,
         String username,
         String accessToken,
+        String refreshToken,
         String tokenType
 ) {}

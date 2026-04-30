@@ -10,7 +10,8 @@ public interface AuthMapper {
 
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "accessToken", source = "token")
+    @Mapping(target = "accessToken", source = "accessToken")
+    @Mapping(target = "refreshToken", source = "refreshToken")
     @Mapping(target = "tokenType", constant = "Bearer")
-    AuthResponse toAuthResponse(User user, String token);
+    AuthResponse toAuthResponse(User user, String accessToken, String refreshToken);
 }

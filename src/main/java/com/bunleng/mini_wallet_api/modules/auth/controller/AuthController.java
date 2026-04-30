@@ -2,6 +2,7 @@ package com.bunleng.mini_wallet_api.modules.auth.controller;
 
 import com.bunleng.mini_wallet_api.modules.auth.dto.AuthResponse;
 import com.bunleng.mini_wallet_api.modules.auth.dto.LoginRequest;
+import com.bunleng.mini_wallet_api.modules.auth.dto.RefreshTokenRequest;
 import com.bunleng.mini_wallet_api.modules.auth.dto.RegisterRequest;
 import com.bunleng.mini_wallet_api.modules.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -29,5 +30,10 @@ public class AuthController {
         return authService.login(
                 request
         );
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return authService.refreshToken(request.refreshToken());
     }
 }

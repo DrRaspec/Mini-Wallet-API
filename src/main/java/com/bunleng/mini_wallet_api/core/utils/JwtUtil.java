@@ -41,6 +41,17 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateRefreshToken(User user) {
+        return Jwts.builder()
+                .subject(user.getId().toString())
+                .claim("type", "refresh")
+                .issuer("mini-wallet")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs * 7))
+                .signWith(key)
+                .compact();
+    }
+
     private Claims parseClaims(String token) {
         return Jwts.parser()
                 .requireIssuer("mini-wallet")

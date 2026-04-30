@@ -1,5 +1,6 @@
 package com.bunleng.mini_wallet_api.modules.auth.service;
 
+import com.bunleng.mini_wallet_api.core.exception.NotFoundException;
 import com.bunleng.mini_wallet_api.core.utils.JwtUtil;
 import com.bunleng.mini_wallet_api.modules.auth.dto.AuthResponse;
 import com.bunleng.mini_wallet_api.modules.auth.dto.LoginRequest;
@@ -13,6 +14,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -23,6 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public AuthResponse login(LoginRequest req) {
+
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         req.username(),
@@ -31,22 +35,17 @@ public class AuthService {
         );
 
         User user = userRepository.findByUsername(req.username())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
-        if (user.getDeleted() || !user.getActive()) {
-            throw new RuntimeException("User is inactive");
-        }
+        String accessToken = jwtUtil.generateToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        user.setLastLogin(java.time.LocalDateTime.now());
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(user);
-
-        return authMapper.toAuthResponse(user, token);
+        return authMapper.toAuthResponse(user, accessToken, refreshToken);
     }
 
     public AuthResponse register(RegisterRequest req) {
-        if (userRepository.existsByUsername(req.username())) {
+
+        if (userRepository.findByUsername(req.username()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
 
@@ -60,8 +59,24 @@ public class AuthService {
 
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user);
+        String accessToken = jwtUtil.generateToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        return authMapper.toAuthResponse(user, token);
+        return authMapper.toAuthResponse(user, accessToken, refreshToken);
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        if (!jwtUtil.validate(refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        String userId = jwtUtil.getUserId(refreshToken);
+
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        String newAccessToken = jwtUtil.generateToken(user);
+
+        return authMapper.toAuthResponse(user, newAccessToken, refreshToken);
     }
 }
