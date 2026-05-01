@@ -20,6 +20,6 @@ miniwallet:
 
 security:
   jwt:
-    # Base64-encoded 256-bit or stronger HMAC key. Replace in every real environment.
-    secret: ${JWT_SECRET}=
-    expiration-ms: 3600000 # 1 hour
+    # Set JWT_SECRET to a Base64-encoded 256-bit or stronger HMAC key.
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000} # 1 hour
