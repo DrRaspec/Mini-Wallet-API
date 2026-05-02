@@ -60,6 +60,10 @@ public class AuthService {
             throw new RuntimeException("Username already exists");
         }
 
+        if (!req.password().equals(req.confirmPassword())) {
+            throw new RuntimeException("Password not matched");
+        }
+
         User user = User.builder()
                 .username(req.username())
                 .password(passwordEncoder.encode(req.password()))
