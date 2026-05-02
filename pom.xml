@@ -32,7 +32,7 @@
         <jwt.version>0.13.0</jwt.version>
         <db.url>${env.DB_URL:jdbc:postgresql://localhost:5432/mini_wallet_db}</db.url>
         <db.username>${env.DB_USERNAME:mini_wallet_user}</db.username>
-        <db.password>${env.DB_PASSWORD:change-me}</db.password>
+        <db.password>${env.DB_PASSWORD}</db.password>
     </properties>
     <dependencies>
         <dependency>

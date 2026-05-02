@@ -47,7 +47,7 @@ The application reads its database configuration from environment variables with
 
 - `DB_URL` - defaults to `jdbc:postgresql://localhost:5432/mini_wallet_db`
 - `DB_USERNAME` - defaults to `mini_wallet_user`
-- `DB_PASSWORD` - defaults to `change-me`
+- `DB_PASSWORD` - **Required.** PostgreSQL password for `DB_USERNAME`
 
 JWT settings are also configured in `src/main/resources/application.yaml`.
 
@@ -55,6 +55,20 @@ JWT settings are also configured in `src/main/resources/application.yaml`.
 - `JWT_EXPIRATION_MS` - access-token lifetime in milliseconds, defaults to `3600000`
 
 Database migrations are stored in `src/main/resources/db/migration`. The Maven Flyway plugin uses the same local PostgreSQL defaults as the application and can be overridden with system properties such as `-Ddb.url=...`, `-Ddb.username=...`, and `-Ddb.password=...`.
+
+If startup fails with `FATAL: password authentication failed`, PostgreSQL is rejecting the configured `DB_USERNAME`/`DB_PASSWORD`. Either set the environment variables to credentials that already work locally, or reset/create the local role:
+
+```sql
+CREATE USER mini_wallet_user WITH PASSWORD 'your-local-password';
+CREATE DATABASE mini_wallet_db OWNER mini_wallet_user;
+```
+
+For an existing local role/database, reset ownership and the password instead:
+
+```sql
+ALTER USER mini_wallet_user WITH PASSWORD 'your-local-password';
+ALTER DATABASE mini_wallet_db OWNER TO mini_wallet_user;
+```
 
 ## Running the API
 
