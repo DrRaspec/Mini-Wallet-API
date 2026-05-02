@@ -30,6 +30,9 @@
         <java.version>17</java.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <jwt.version>0.13.0</jwt.version>
+        <db.url>${env.DB_URL:jdbc:postgresql://localhost:5432/mini_wallet_db}</db.url>
+        <db.username>${env.DB_USERNAME:mini_wallet_user}</db.username>
+        <db.password>${env.DB_PASSWORD:change-me}</db.password>
     </properties>
     <dependencies>
         <dependency>
@@ -40,6 +43,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.7.11</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -60,6 +64,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.validation</groupId>
@@ -99,6 +111,19 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>11.14.1</version>
+                <configuration>
+                    <url>${db.url}</url>
+                    <user>${db.username}</user>
+                    <password>${db.password}</password>
+                    <locations>
+                        <location>filesystem:src/main/resources/db/migration</location>
+                    </locations>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
