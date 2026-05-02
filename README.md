@@ -51,14 +51,23 @@ The application reads its database configuration from environment variables with
 
 JWT settings are also configured in `src/main/resources/application.yaml`.
 
-- `JWT_SECRET` - Base64-encoded 256-bit or stronger HMAC key
+- `JWT_SECRET` - **Required.** Base64-encoded 256-bit or stronger HMAC key
 - `JWT_EXPIRATION_MS` - access-token lifetime in milliseconds, defaults to `3600000`
+
+Database migrations are stored in `src/main/resources/db/migration`. The Maven Flyway plugin uses the same local PostgreSQL defaults as the application and can be overridden with system properties such as `-Ddb.url=...`, `-Ddb.username=...`, and `-Ddb.password=...`.
 
 ## Running the API
 
 1. Create the PostgreSQL database if it does not already exist.
-2. Set the database environment variables if you do not want to use the defaults.
-3. Start the application with the Maven wrapper:
+2. Make sure the database user can create tables in the target schema (Flyway needs this on first run).
+3. Set the database environment variables if you do not want to use the defaults.
+4. Apply migrations manually if you want to prepare the schema before starting the app:
+
+```bash
+./mvnw flyway:migrate
+```
+
+5. Start the application with the Maven wrapper:
 
 ```bash
 ./mvnw spring-boot:run
